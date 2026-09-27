@@ -1,26 +1,4 @@
-# AlexNet from Scratch on Stanford Dogs
-
-Implementation of AlexNet from scratch using PyTorch on the Stanford Dogs dataset.
-
-## Model Structure
-
-- 5 Convolutional layers
-- ReLU activation
-- Max Pooling
-- Batch Normalization
-- Fully Connected layers
-- Dropout
-- Final classification layer
-
-## Training Configuration
-
-- Optimizer: SGD + Momentum
-- Momentum: 0.9
-- Learning Rate: 0.01 / 0.001
-- Weight Decay (L2): 0.0005
-- Batch Size: 32
-- Input Size: 227 × 227
-
+The TenCrop transformation produces 10 different 227 × 227 crops for each image, which are evaluated during testing.
 ## Experiments
 
 | Optimizer | LR | Epochs | Loss | Train Acc | Test Acc | Regularization |
@@ -45,3 +23,76 @@ The experiments also show that increasing training epochs improved training accu
 ## Results
 
 The final notebook includes a chart comparing the training and test performance across the experiments.
+
+## Model Structure
+
+The model is implemented from scratch using PyTorch.
+
+### Feature Extractor
+
+The feature extractor consists of 5 convolutional layers:
+
+1. Conv2D: 3 → 96 channels, kernel size 11, stride 4
+   - Batch Normalization
+   - ReLU
+   - Max Pooling: 3 × 3, stride 2
+
+2. Conv2D: 96 → 256 channels, kernel size 5, padding 2
+   - Batch Normalization
+   - ReLU
+   - Max Pooling: 3 × 3, stride 2
+
+3. Conv2D: 256 → 384 channels, kernel size 3, padding 1
+   - ReLU
+
+4. Conv2D: 384 → 384 channels, kernel size 3, padding 1
+   - ReLU
+
+5. Conv2D: 384 → 256 channels, kernel size 3, padding 1
+   - ReLU
+   - Max Pooling: 3 × 3, stride 2
+
+### Classifier
+
+The classifier consists of:
+
+- Dropout: 0.5
+- Linear: 256 × 6 × 6 → 4096
+- ReLU
+- Dropout: 0.5
+- Linear: 4096 → 4096
+- ReLU
+- Linear: 4096 → Number of classes
+
+The feature output is flattened before being passed to the classifier.
+
+## Data Transformations
+
+### Training Transformations
+
+Training images are processed using:
+
+- Resize to 256 × 256
+- Random Crop to 227 × 227
+- Random Horizontal Flip with probability 0.5
+- Random Affine Transformation:
+  - Rotation: ±15°
+  - Translation: up to 10% horizontally and vertically
+  - Scale: 0.9–1.1
+- Convert to Tensor
+- Normalize using:
+
+  `mean = [0.485, 0.456, 0.406]`
+
+  `std = [0.229, 0.224, 0.225]`
+
+### Test Transformations
+
+For testing:
+
+- Resize to 256 × 256
+- TenCrop to 227 × 227
+- Convert each crop to a Tensor
+- Stack the 10 crops
+- Normalize using the same mean and standard deviation as the training data
+
